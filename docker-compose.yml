@@ -4,7 +4,7 @@ services:
     container_name: alloy
     restart: unless-stopped
     volumes:
-      - ./config.alloy:/etc/alloy/config.alloy:ro
+      - ./monitoring/config.alloy:/etc/alloy/config.alloy:ro
     command:
       - run
       - /etc/alloy/config.alloy
@@ -23,7 +23,7 @@ services:
     container_name: tempo
     restart: unless-stopped
     volumes:
-      - ./tempo.yaml:/etc/tempo/tempo.yaml:ro
+      - ./monitoring/tempo.yaml:/etc/tempo/tempo.yaml:ro
     command:
       - -config.file=/etc/tempo/tempo.yaml
     networks:
@@ -34,7 +34,7 @@ services:
     container_name: loki
     restart: unless-stopped
     volumes:
-      - ./loki.yaml:/etc/loki/loki.yaml:ro
+      - ./monitoring/loki.yaml:/etc/loki/loki.yaml:ro
     command:
       - -config.file=/etc/loki/loki.yaml
     networks:
@@ -45,8 +45,8 @@ services:
     container_name: grafana
     restart: unless-stopped
     volumes:
-      - ./provisioning:/etc/grafana/provisioning:ro
-      # - ./dashboards:/var/lib/grafana/dashboards:ro
+      - ./monitoring/provisioning:/etc/grafana/provisioning:ro
+      - ./monitoring/dashboards:/var/lib/grafana/dashboards:ro
     environment:
       - GF_FEATURE_TOGGLES_ENABLE=flameGraph traceqlSearch traceQLStreaming correlations metricsSummary traceqlEditor traceToMetrics traceToProfiles
       - GF_AUTH_ANONYMOUS_ENABLED=true
