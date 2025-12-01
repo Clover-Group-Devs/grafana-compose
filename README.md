@@ -2,7 +2,7 @@
 
 A complete observability stack with **Grafana**, **Tempo**, **Loki**, and **Grafana Alloy** for distributed tracing, logging, and metrics collection. Designed to work seamlessly with Dokploy's Docker network.
 
-<img src="docs/dokploy.png" alt="Dokploy Integration" width="400"/>
+![Dokploy Integration](docs/dokploy.png)
 
 <img src="docs/dokploy-metrics.png" alt="Metrics" width="400"/>
 
