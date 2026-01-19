@@ -4,25 +4,18 @@
 
 loki.source.docker "docker" {
   host = "unix:///var/run/docker.sock"
-
-  // Собираем логи со всех контейнеров
-  // (Alloy сам подтянет метаданные/labels)
   targets = [{"" = ""}]
-
   forward_to = [loki.process.docker.receiver]
 }
 
 loki.process "docker" {
-  // Базовый набор лейблов, чтобы удобно фильтровать в Grafana
   stage.static_labels {
     values = {
-      job = "docker"
-      env = "prod"
+      job = "docker",
+      env = "prod",
     }
   }
 
-  // Нормализация полезных лейблов (если доступны)
-  // Обычно присутствуют: container, compose_service, compose_project и т.д.
   stage.label_keep {
     values = [
       "job",
@@ -49,9 +42,6 @@ loki.write "default" {
 // TEMPO: OTLP ingest -> Tempo
 // =======================
 
-// Приложения шлют OTLP в Alloy:
-// - gRPC: 4317
-// - HTTP: 4318
 otelcol.receiver.otlp "ingest" {
   grpc {
     endpoint = "0.0.0.0:4317"
@@ -65,7 +55,6 @@ otelcol.receiver.otlp "ingest" {
   }
 }
 
-// Добавим немного “гигиены” перед отправкой в Tempo
 otelcol.processor.batch "traces" {
   send_batch_size = 1024
   timeout         = "2s"
@@ -76,7 +65,6 @@ otelcol.processor.batch "traces" {
 }
 
 otelcol.processor.attributes "enrich" {
-  // Проставляем env=prod во все трейсы (можешь менять)
   action {
     key    = "deployment.environment"
     value  = "prod"
