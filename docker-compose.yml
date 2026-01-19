@@ -7,7 +7,6 @@ services:
       - ./monitoring/config.alloy:/etc/alloy/config.alloy:ro
       - alloy-data:/var/lib/alloy
 
-      # если хочешь собирать docker-логи:
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - /var/lib/docker/containers:/var/lib/docker/containers:ro
 
@@ -22,7 +21,7 @@ services:
       - tempo
       - loki
     networks:
-      - dokploy-network
+      - grafana-network
     ports:
       - "12345:12345"   # UI Alloy (можно не наружу, если через Traefik)
       - "4317:4317"     # OTLP gRPC (если приложения шлют в Alloy)
@@ -38,7 +37,7 @@ services:
     command:
       - -config.file=/etc/tempo/tempo.yaml
     networks:
-      - dokploy-network
+      - grafana-network
     ports:
       - "3200:3200"     # query/ready
       # tempo может принимать OTLP напрямую (если нужно):
@@ -55,7 +54,7 @@ services:
     command:
       - -config.file=/etc/loki/loki.yaml
     networks:
-      - dokploy-network
+      - grafana-network
     ports:
       - "3100:3100"
 
@@ -83,12 +82,12 @@ services:
       - tempo
       - loki
     networks:
-      - dokploy-network
+      - grafana-network
     ports:
-      - "3000:3333"   # или убери, если у тебя всё через Traefik/Dokploy
+      - "3333:3333"   # или убери, если у тебя всё через Traefik/Dokploy
 
 networks:
-  dokploy-network:
+  grafana-network:
     external: true
 
 volumes:
