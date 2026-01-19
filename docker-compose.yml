@@ -85,7 +85,7 @@ services:
     networks:
       - dokploy-network
     ports:
-      - "3000:3000"   # или убери, если у тебя всё через Traefik/Dokploy
+      - "3000:3333"   # или убери, если у тебя всё через Traefik/Dokploy
 
 networks:
   dokploy-network:
