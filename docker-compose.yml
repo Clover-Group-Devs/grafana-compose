@@ -34,8 +34,6 @@ services:
       - tempo-data:/var/tempo
     command:
       - -config.file=/etc/tempo/tempo.yaml
-    networks:
-      - grafana-network
     ports:
       - "3200:3200"     # query/ready
       # tempo может принимать OTLP напрямую (если нужно):
