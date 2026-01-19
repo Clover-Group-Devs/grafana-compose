@@ -20,8 +20,6 @@ services:
     depends_on:
       - tempo
       - loki
-    networks:
-      - grafana-network
     ports:
       - "12345:12345"   # UI Alloy (можно не наружу, если через Traefik)
       - "4317:4317"     # OTLP gRPC (если приложения шлют в Alloy)
@@ -53,8 +51,6 @@ services:
       - loki-data:/loki
     command:
       - -config.file=/etc/loki/loki.yaml
-    networks:
-      - grafana-network
     ports:
       - "3100:3100"
 
@@ -81,14 +77,8 @@ services:
     depends_on:
       - tempo
       - loki
-    networks:
-      - grafana-network
     ports:
       - "3333:3333"   # или убери, если у тебя всё через Traefik/Dokploy
-
-networks:
-  grafana-network:
-    external: true
 
 volumes:
   grafana-data:
