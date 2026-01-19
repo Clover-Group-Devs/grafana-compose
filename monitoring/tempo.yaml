@@ -2,25 +2,18 @@ server:
   http_listen_port: 3200
   grpc_listen_port: 9095
 
-distributor:
-  receivers:
-    otlp:
-      protocols:
-        grpc:
-          endpoint: 0.0.0.0:4317
-        http:
-          endpoint: 0.0.0.0:4318
-    jaeger:
-      protocols:
-        thrift_http:
-          endpoint: 0.0.0.0:14268
+# ВАЖНО:
+# OTLP/Jaeger ingest теперь в Alloy, поэтому receivers убираем.
+# Tempo остаётся хранилищем + query API.
+# distributor:
+#   receivers: ...
 
 ingester:
   max_block_duration: 5m
 
 compactor:
   compaction:
-    block_retention: 48h
+    block_retention: 168h # было 48h, поставил 7 дней (можешь вернуть)
 
 storage:
   trace:

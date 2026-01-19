@@ -1,10 +1,16 @@
 services:
   alloy:
-    image: grafana/alloy:v1.11.3
+    image: grafana/alloy:latest
     container_name: alloy
     restart: unless-stopped
     volumes:
       - ./monitoring/config.alloy:/etc/alloy/config.alloy:ro
+      - alloy-data:/var/lib/alloy
+
+      # если хочешь собирать docker-логи:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+
     command:
       - run
       - /etc/alloy/config.alloy
@@ -17,53 +23,76 @@ services:
       - loki
     networks:
       - dokploy-network
+    ports:
+      - "12345:12345"   # UI Alloy (можно не наружу, если через Traefik)
+      - "4317:4317"     # OTLP gRPC (если приложения шлют в Alloy)
+      - "4318:4318"     # OTLP HTTP
 
   tempo:
-    image: grafana/tempo:2.9.0
+    image: grafana/tempo:latest
     container_name: tempo
     restart: unless-stopped
     volumes:
       - ./monitoring/tempo.yaml:/etc/tempo/tempo.yaml:ro
+      - tempo-data:/var/tempo
     command:
       - -config.file=/etc/tempo/tempo.yaml
     networks:
       - dokploy-network
+    ports:
+      - "3200:3200"     # query/ready
+      # tempo может принимать OTLP напрямую (если нужно):
+      - "4319:4317"     # (опционально) маппим наружу на другой порт, чтобы не конфликтовать с alloy
+      - "4320:4318"
 
   loki:
-    image: grafana/loki:3.5.8
+    image: grafana/loki:latest
     container_name: loki
     restart: unless-stopped
     volumes:
       - ./monitoring/loki.yaml:/etc/loki/loki.yaml:ro
+      - loki-data:/loki
     command:
       - -config.file=/etc/loki/loki.yaml
     networks:
       - dokploy-network
+    ports:
+      - "3100:3100"
 
   grafana:
-    image: grafana/grafana:12.2.1
+    image: grafana/grafana:latest
     container_name: grafana
     restart: unless-stopped
     volumes:
       - ./monitoring/provisioning:/etc/grafana/provisioning:ro
       - ./monitoring/dashboards:/var/lib/grafana/dashboards:ro
+      - grafana-data:/var/lib/grafana
     environment:
       - GF_FEATURE_TOGGLES_ENABLE=flameGraph traceqlSearch traceQLStreaming correlations metricsSummary traceqlEditor traceToMetrics traceToProfiles
       - GF_AUTH_ANONYMOUS_ENABLED=false
-      # username: admin
-      # initPassword: admin
-      # updatedPassword: Qwerty@123
       - GF_AUTH_DISABLE_LOGIN_FORM=false
       - GF_PLUGINS_ENABLE_ALPHA=false
       - GF_ANALYTICS_REPORTING_ENABLED=false
       - GF_ANALYTICS_CHECK_FOR_UPDATES=false
       - GF_ANALYTICS_CHECK_FOR_PLUGIN_UPDATES=false
+
+      # чтобы не ловить дефолт admin/admin:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=Qwerty@123
     depends_on:
       - tempo
       - loki
     networks:
       - dokploy-network
+    ports:
+      - "3000:3000"   # или убери, если у тебя всё через Traefik/Dokploy
 
 networks:
   dokploy-network:
     external: true
+
+volumes:
+  grafana-data:
+  loki-data:
+  tempo-data:
+  alloy-data:
